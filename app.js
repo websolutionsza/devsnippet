@@ -296,14 +296,12 @@ function initAuth() {
 
 // Login button
 $('btn-google-login').addEventListener('click', () => {
-    // Redirect to Postbase Google OAuth endpoint.
-    // The exact URL: The Callback URL we configured earlier.
-    // For Postbase, the authorize endpoint is usually:
-    // {POSTBASE_URL}/auth/v1/authorize?provider=google&redirect_to={YOUR_APP_URL}
-    // BUT we don't know the exact URL, so we'll construct it.
-    // Since the user is on a specific domain, we set the redirect_to to the current origin.
     const redirectTo = window.location.origin + window.location.pathname;
-    const authUrl = `${CONFIG.POSTBASE_URL.replace('/api/v1', '')}/api/auth/oauth2/authorize?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`;
+    // Try the correct Better Auth Social Sign-In endpoint
+    const authUrl = 'https://postbase-production-b4c8.up.railway.app/api/auth/sign-in/social?provider=google&redirect_to=' + encodeURIComponent(redirectTo);
+    
+    console.log('Redirecting to:', authUrl); // This will show in console if button works
+    window.location.href = authUrl;
 });
 
 // Handle OAuth callback - This should parse the URL params after redirect
