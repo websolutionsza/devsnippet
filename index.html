@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DevSnippet - Your Code Library</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <!-- Highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+</head>
+<body>
+
+    <!-- ============================================================ -->
+    <!-- PAGE: LOGIN                                                   -->
+    <!-- ============================================================ -->
+    <div id="page-login" class="page active">
+        <div class="login-container">
+            <div class="login-box">
+                <div class="logo-icon">
+                    <i class="fas fa-code"></i>
+                </div>
+                <h1>DevSnippet</h1>
+                <p class="tagline">Your personal code snippet library.</p>
+                <button id="btn-google-login" class="btn-google">
+                    <i class="fab fa-google"></i> Sign in with Google
+                </button>
+                <p class="login-note">Save, organize, and reuse your code across devices.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PAGE: DASHBOARD                                               -->
+    <!-- ============================================================ -->
+    <div id="page-dashboard" class="page">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <i class="fas fa-code header-logo"></i>
+                <span class="header-title">DevSnippet</span>
+            </div>
+            <div class="header-right">
+                <button id="btn-create-snippet" class="btn-primary">
+                    <i class="fas fa-plus"></i> New Snippet
+                </button>
+                <div class="user-info">
+                    <span id="user-email" class="user-email"></span>
+                    <img id="user-avatar" class="user-avatar" src="" alt="avatar" />
+                </div>
+                <button id="btn-logout" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Search & Filter Bar -->
+        <div class="search-bar">
+            <div class="search-input-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-input" placeholder="Search snippets by title or description..." />
+            </div>
+            <select id="language-filter">
+                <option value="">All Languages</option>
+                <option value="JavaScript">JavaScript</option>
+                <option value="Python">Python</option>
+                <option value="HTML">HTML</option>
+                <option value="CSS">CSS</option>
+                <option value="SQL">SQL</option>
+                <option value="React">React</option>
+                <option value="Vue">Vue</option>
+                <option value="Angular">Angular</option>
+                <option value="Django">Django</option>
+                <option value="Ruby">Ruby</option>
+                <option value="Go">Go</option>
+                <option value="Rust">Rust</option>
+                <option value="PHP">PHP</option>
+                <option value="Other">Other</option>
+            </select>
+            <input type="text" id="tag-filter" placeholder="Filter by tag..." />
+        </div>
+
+        <!-- Snippet Grid -->
+        <div id="snippet-grid" class="snippet-grid">
+            <!-- Snippets will be rendered here -->
+            <div id="empty-state" class="empty-state" style="display: none;">
+                <i class="fas fa-inbox"></i>
+                <h2>No snippets yet</h2>
+                <p>Click "New Snippet" to add your first code snippet!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PAGE: CREATE / EDIT FORM                                      -->
+    <!-- ============================================================ -->
+    <div id="page-form" class="page">
+        <div class="form-container">
+            <h2 id="form-title">Create New Snippet</h2>
+            <form id="snippet-form">
+                <div class="form-group">
+                    <label for="form-title-input">Title *</label>
+                    <input type="text" id="form-title-input" required placeholder="e.g., Fetch API Example" />
+                </div>
+                <div class="form-group">
+                    <label for="form-description">Description</label>
+                    <textarea id="form-description" rows="3" placeholder="What does this snippet do?"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="form-language">Language</label>
+                        <input type="text" id="form-language" placeholder="e.g., JavaScript" list="language-options" />
+                        <datalist id="language-options">
+                            <option value="JavaScript"></option>
+                            <option value="Python"></option>
+                            <option value="HTML"></option>
+                            <option value="CSS"></option>
+                            <option value="SQL"></option>
+                            <option value="React"></option>
+                            <option value="Vue"></option>
+                            <option value="Angular"></option>
+                            <option value="Django"></option>
+                            <option value="Ruby"></option>
+                            <option value="Go"></option>
+                            <option value="Rust"></option>
+                            <option value="PHP"></option>
+                        </datalist>
+                    </div>
+                    <div class="form-group">
+                        <label for="form-tags">Tags (comma separated)</label>
+                        <input type="text" id="form-tags" placeholder="e.g., api, fetch, promises" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="form-code">Code *</label>
+                    <textarea id="form-code" rows="12" required placeholder="Paste your code here..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="btn-form-cancel" class="btn-secondary">Cancel</button>
+                    <button type="submit" id="btn-form-save" class="btn-primary">
+                        <i class="fas fa-save"></i> Save Snippet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- PAGE: DETAIL VIEW                                             -->
+    <!-- ============================================================ -->
+    <div id="page-detail" class="page">
+        <div class="detail-container">
+            <button id="btn-detail-back" class="btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+            <div id="detail-content">
+                <div class="detail-header">
+                    <h1 id="detail-title">Snippet Title</h1>
+                    <div class="detail-meta">
+                        <span id="detail-language" class="badge-language">JavaScript</span>
+                        <span id="detail-created">Created: N/A</span>
+                        <span id="detail-updated">Updated: N/A</span>
+                    </div>
+                    <div id="detail-tags" class="detail-tags"></div>
+                </div>
+                <div class="detail-body">
+                    <p id="detail-description" class="detail-description">Description here...</p>
+                    <div class="code-wrapper">
+                        <div class="code-header">
+                            <span id="detail-code-lang-label">Code</span>
+                            <button id="btn-copy-code" class="btn-copy">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <pre><code id="detail-code" class="language-javascript">// code goes here</code></pre>
+                    </div>
+                </div>
+                <div class="detail-actions">
+                    <button id="btn-detail-edit" class="btn-primary">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button id="btn-detail-delete" class="btn-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
