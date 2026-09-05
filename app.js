@@ -297,10 +297,9 @@ function initAuth() {
 // Login button
 $('btn-google-login').addEventListener('click', () => {
     const redirectTo = window.location.origin + window.location.pathname;
-    // Try the correct Better Auth Social Sign-In endpoint
-    const authUrl = 'https://postbase-production-b4c8.up.railway.app/api/auth/sign-in/social?provider=google&redirect_to=' + encodeURIComponent(redirectTo);
+    const authUrl = 'https://postbase-production-b4c8.up.railway.app/api/auth/oauth2/authorize?provider=google&redirect_to=' + encodeURIComponent(redirectTo);
     
-    console.log('Redirecting to:', authUrl); // This will show in console if button works
+    console.log('Redirecting to:', authUrl);
     window.location.href = authUrl;
 });
 
