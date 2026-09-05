@@ -303,7 +303,7 @@ $('btn-google-login').addEventListener('click', () => {
     // BUT we don't know the exact URL, so we'll construct it.
     // Since the user is on a specific domain, we set the redirect_to to the current origin.
     const redirectTo = window.location.origin + window.location.pathname;
-    const authUrl = `${CONFIG.POSTBASE_URL.replace('/api/v1', '')}/api/auth/sign-in/social?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`;
+    const authUrl = `${CONFIG.POSTBASE_URL.replace('/api/v1', '')}/api/auth/oauth2/authorize?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`;
 });
 
 // Handle OAuth callback - This should parse the URL params after redirect
