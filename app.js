@@ -2,13 +2,13 @@
    CONFIGURATION - FILL IN YOUR POSTBASE DETAILS HERE
    ============================================================ */
 const CONFIG = {
-    // Your Postbase API Base URL (e.g., https://your-project.up.railway.app/api/v1)
+    // Your Postbase API Base URL
     POSTBASE_URL: 'https://postbase-production-b4c8.up.railway.app/api/v1',
 
     // YOUR ANON KEY - Copy this from Postbase Dashboard → API Keys
     ANON_KEY: 'pb_anon_F2szKSwUOQXYB6lXCDFmbfYh2KWZJRAEDlmbEf614-H8PBzQmWc3Ob5TqLD5XiUW',
 
-    // REST endpoint for the snippets table (adjust if your URL structure is different)
+    // REST endpoint for the snippets table
     get REST_URL() {
         return `${this.POSTBASE_URL}/rest/snippets`;
     }
@@ -20,7 +20,7 @@ const CONFIG = {
 let state = {
     user: null,          // { id, email, avatar, access_token }
     snippets: [],
-    currentSnippetId: null, // for editing
+    currentSnippetId: null,
     searchTerm: '',
     languageFilter: '',
     tagFilter: '',
@@ -47,7 +47,6 @@ function showToast(message, type = 'info') {
     if (toastTimeout) clearTimeout(toastTimeout);
     toastEl.textContent = message;
     toastEl.className = `toast ${type}`;
-    // Force reflow
     void toastEl.offsetWidth;
     toastEl.classList.add('show');
     toastTimeout = setTimeout(() => {
@@ -105,7 +104,6 @@ function getHeaders() {
     };
 }
 
-// GET snippets for the current user
 async function fetchSnippets() {
     if (!state.user) return [];
     const headers = getHeaders();
@@ -120,7 +118,6 @@ async function fetchSnippets() {
     return data;
 }
 
-// CREATE a snippet
 async function createSnippet(payload) {
     const headers = getHeaders();
     const body = {
@@ -139,10 +136,8 @@ async function createSnippet(payload) {
     return await resp.json();
 }
 
-// UPDATE a snippet
 async function updateSnippet(id, payload) {
     const headers = getHeaders();
-    // Security: filter by both id AND user_id
     const url = `${CONFIG.REST_URL}?id=eq.${id}&user_id=eq.${state.user.id}`;
     const resp = await fetch(url, {
         method: 'PATCH',
@@ -156,10 +151,8 @@ async function updateSnippet(id, payload) {
     return await resp.json();
 }
 
-// DELETE a snippet
 async function deleteSnippet(id) {
     const headers = getHeaders();
-    // Security: filter by both id AND user_id
     const url = `${CONFIG.REST_URL}?id=eq.${id}&user_id=eq.${state.user.id}`;
     const resp = await fetch(url, {
         method: 'DELETE',
@@ -180,7 +173,6 @@ function renderSnippets() {
     const empty = $('empty-state');
     let filtered = state.snippets;
 
-    // Search filter
     if (state.searchTerm.trim()) {
         const term = state.searchTerm.toLowerCase().trim();
         filtered = filtered.filter(s =>
@@ -189,14 +181,12 @@ function renderSnippets() {
         );
     }
 
-    // Language filter
     if (state.languageFilter) {
         filtered = filtered.filter(s =>
             s.language && s.language.toLowerCase() === state.languageFilter.toLowerCase()
         );
     }
 
-    // Tag filter
     if (state.tagFilter.trim()) {
         const tag = state.tagFilter.trim().toLowerCase();
         filtered = filtered.filter(s => {
@@ -206,7 +196,6 @@ function renderSnippets() {
         });
     }
 
-    // Clear grid (keep empty state element)
     const cards = grid.querySelectorAll('.snippet-card');
     cards.forEach(el => el.remove());
 
@@ -242,20 +231,16 @@ function renderSnippets() {
             </div>
         `;
 
-        // Click on card opens detail
         card.addEventListener('click', (e) => {
-            // Ignore clicks on buttons inside the card
             if (e.target.closest('button')) return;
             openDetail(snippet.id);
         });
 
-        // Edit button
         card.querySelector('.btn-edit-card').addEventListener('click', (e) => {
             e.stopPropagation();
             openEditForm(snippet.id);
         });
 
-        // Delete button
         card.querySelector('.btn-delete-card').addEventListener('click', (e) => {
             e.stopPropagation();
             handleDelete(snippet.id);
@@ -266,64 +251,96 @@ function renderSnippets() {
 }
 
 /* ============================================================
-   AUTH: GOOGLE LOGIN
+   AUTH: GOOGLE LOGIN (POPUP METHOD)
    ============================================================ */
-// NOTE: Since Postbase uses a redirect flow, we handle the callback
-// when the user returns to the app.
-// For this demo, we assume the user clicks the button, and Postbase redirects.
-// The actual implementation of the OAuth redirect depends on your Postbase setup.
-// Usually you redirect to: POSTBASE_URL/oauth/google?redirect_to=YOUR_APP_URL
 
-function initAuth() {
-    // Check for existing session
-    const session = getSession();
-    if (session) {
-        // We have a user, load dashboard
-        loadDashboard();
-        return;
-    }
-
-    // Check if we just returned from Google OAuth redirect
-    // Postbase usually appends ?access_token=... or uses hash fragment.
-    // For simplicity in this build, we expect the user to set the session manually
-    // OR we redirect to a specific OAuth flow.
-    // Let's implement a basic redirect to Postbase Google Auth.
-    // Usually the URL is: https://your-postbase-url/api/auth/v1/authorize?provider=google&redirect_to=YOUR_APP_URL
-
-    // For now, show login page.
-    showPage('login');
-}
-
-// Login button
+// Login button - Opens a popup for OAuth
 $('btn-google-login').addEventListener('click', () => {
     const redirectTo = window.location.origin + window.location.pathname;
-    const authUrl = 'https://postbase-production-b4c8.up.railway.app/api/auth/oauth2/authorize?provider=google&redirect_to=' + encodeURIComponent(redirectTo);
+    // Using OAuth2 authorize endpoint with popup mode
+    const authUrl = `https://postbase-production-b4c8.up.railway.app/api/auth/oauth2/authorize?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`;
     
-    console.log('Redirecting to:', authUrl);
-    window.location.href = authUrl;
+    console.log('Opening auth popup:', authUrl);
+    
+    // Open popup
+    const popup = window.open(authUrl, 'google-auth', 'width=500,height=600,left=200,top=100');
+    
+    // Listen for messages from the popup
+    const handleMessage = (event) => {
+        if (event.data && event.data.type === 'oauth-callback') {
+            console.log('Received OAuth callback:', event.data);
+            const { access_token, user_id, email, avatar_url } = event.data;
+            
+            if (access_token && user_id) {
+                const user = {
+                    id: user_id,
+                    email: email || 'user@example.com',
+                    avatar: avatar_url || '',
+                    access_token: access_token,
+                };
+                saveSession(user);
+                showToast('Welcome back!', 'success');
+                loadDashboard();
+            } else {
+                showToast('Login failed: Missing user data', 'error');
+            }
+            
+            window.removeEventListener('message', handleMessage);
+        }
+    };
+    
+    window.addEventListener('message', handleMessage);
+    
+    // Fallback: Check popup URL after it closes
+    const checkPopup = setInterval(() => {
+        if (popup.closed) {
+            clearInterval(checkPopup);
+            window.removeEventListener('message', handleMessage);
+            // Try to get session from storage (in case token was set)
+            const session = getSession();
+            if (session) {
+                loadDashboard();
+            }
+        }
+    }, 1000);
 });
 
-// Handle OAuth callback - This should parse the URL params after redirect
+// Handle OAuth callback from URL params (for redirect flow)
 function handleOAuthCallback() {
-    const params = new URLSearchParams(window.location.search);
-    const accessToken = params.get('access_token') || params.get('token');
-    const userId = params.get('user_id') || params.get('id');
-    const email = params.get('email');
-    const avatar = params.get('avatar_url');
+    // Check URL hash (Postbase often puts tokens in the hash)
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token') || hashParams.get('token');
+    const userId = hashParams.get('user_id') || hashParams.get('id');
+    const email = hashParams.get('email');
+    const avatar = hashParams.get('avatar_url');
+    
+    // Also check query params
+    const queryParams = new URLSearchParams(window.location.search);
+    const queryAccessToken = queryParams.get('access_token') || queryParams.get('token');
+    const queryUserId = queryParams.get('user_id') || queryParams.get('id');
+    const queryEmail = queryParams.get('email');
+    const queryAvatar = queryParams.get('avatar_url');
+    
+    const finalToken = accessToken || queryAccessToken;
+    const finalUserId = userId || queryUserId;
+    const finalEmail = email || queryEmail || 'user@example.com';
+    const finalAvatar = avatar || queryAvatar || '';
 
-    if (accessToken && userId) {
+    if (finalToken && finalUserId) {
         const user = {
-            id: userId,
-            email: email || 'user@example.com',
-            avatar: avatar || '',
-            access_token: accessToken,
+            id: finalUserId,
+            email: finalEmail,
+            avatar: finalAvatar,
+            access_token: finalToken,
         };
         saveSession(user);
         // Clean URL
         window.history.replaceState({}, document.title, window.location.pathname);
-        loadDashboard();
         showToast('Welcome back!', 'success');
+        loadDashboard();
+        return true;
     }
+    return false;
 }
 
 /* ============================================================
@@ -345,7 +362,6 @@ async function loadDashboard() {
         $('user-avatar').style.display = 'none';
     }
 
-    // Load snippets
     try {
         await fetchSnippets();
         renderSnippets();
@@ -461,7 +477,6 @@ async function openDetail(id) {
     $('detail-created').textContent = `Created: ${created}`;
     $('detail-updated').textContent = `Updated: ${updated}`;
 
-    // Tags
     const tagsContainer = $('detail-tags');
     tagsContainer.innerHTML = '';
     if (snippet.tags) {
@@ -473,25 +488,20 @@ async function openDetail(id) {
         });
     }
 
-    // Code
     const codeEl = $('detail-code');
     codeEl.textContent = snippet.code || '';
     codeEl.className = `language-${snippet.language?.toLowerCase() || 'plaintext'}`;
-    // Apply syntax highlighting
     if (window.hljs) {
         window.hljs.highlightElement(codeEl);
     }
 
-    // Store current snippet ID for edit/delete actions
     state.currentSnippetId = id;
 
-    // Copy button
     $('btn-copy-code').onclick = () => {
         const codeText = snippet.code || '';
         navigator.clipboard.writeText(codeText).then(() => {
             showToast('Code copied to clipboard!', 'success');
         }).catch(() => {
-            // Fallback
             const textarea = document.createElement('textarea');
             textarea.value = codeText;
             document.body.appendChild(textarea);
@@ -502,12 +512,10 @@ async function openDetail(id) {
         });
     };
 
-    // Edit button
     $('btn-detail-edit').onclick = () => {
         openEditForm(id);
     };
 
-    // Delete button
     $('btn-detail-delete').onclick = () => {
         handleDelete(id);
     };
@@ -527,9 +535,7 @@ async function handleDelete(id) {
     try {
         await deleteSnippet(id);
         showToast('Snippet deleted.', 'info');
-        // Remove from local state
         state.snippets = state.snippets.filter(s => s.id !== id);
-        // If we are on detail page, go back to dashboard
         if (pages.detail.classList.contains('active')) {
             loadDashboard();
         } else {
@@ -562,10 +568,10 @@ $('tag-filter').addEventListener('input', (e) => {
    INIT
    ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
-    // Check OAuth callback params
-    handleOAuthCallback();
-
-    // If no user after callback check, show login or dashboard based on session
+    // Check URL for OAuth callback
+    const handled = handleOAuthCallback();
+    
+    // If no user after callback check, show login or dashboard
     if (!state.user) {
         const session = getSession();
         if (session) {
@@ -576,12 +582,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-/* ============================================================
-   NOTE ON AUTHENTICATION FLOW:
-   Postbase uses OAuth redirect. After the user logs in via Google,
-   they are redirected back to your app with a token in the URL.
-   For this to work in development, you need to ensure your
-   Postbase Callback URL matches your localhost address.
-   If you're testing locally, add http://localhost:5500 or whatever
-   your Live Server uses to the authorized redirect URIs in Google Cloud.
-   ============================================================ */
+console.log('🚀 DevSnippet App Loaded');
+console.log('📡 Postbase URL:', CONFIG.POSTBASE_URL);
+console.log('🔑 ANON Key set:', CONFIG.ANON_KEY ? '✅ Yes' : '❌ No');
