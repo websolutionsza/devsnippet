@@ -251,15 +251,16 @@ function renderSnippets() {
 }
 
 /* ============================================================
-   AUTH: GOOGLE LOGIN - TEST 1: sign-in/social (NO state)
+   AUTH: GOOGLE LOGIN - TEST 2: sign-in/social (WITH state)
    ============================================================ */
 $('btn-google-login').addEventListener('click', () => {
     const redirectTo = window.location.origin + window.location.pathname;
     
-    // ===== TEST 1: sign-in/social (NO state) =====
-    const authUrl = `https://postbase-production-b4c8.up.railway.app/api/auth/sign-in/social?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`;
+    // ===== TEST 2: sign-in/social WITH state =====
+    const stateParam = Math.random().toString(36).substring(2, 15);
+    const authUrl = `https://postbase-production-b4c8.up.railway.app/api/auth/sign-in/social?provider=google&redirect_to=${encodeURIComponent(redirectTo)}&state=${stateParam}`;
     
-    console.log('🔵 TEST 1 - Opening:', authUrl);
+    console.log('🟢 TEST 2 - Opening:', authUrl);
     window.open(authUrl, 'google-auth', 'width=500,height=600,left=200,top=100');
 });
 
@@ -535,4 +536,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-console.log('🚀 DevSnippet App Loaded - TEST 1: sign-in/social (NO state)');
+console.log('🚀 DevSnippet App Loaded - TEST 2: sign-in/social (WITH state)');
