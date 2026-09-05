@@ -18,7 +18,7 @@ const CONFIG = {
    GLOBAL STATE
    ============================================================ */
 let state = {
-    user: null,          // { id, email, avatar, access_token }
+    user: null,
     snippets: [],
     currentSnippetId: null,
     searchTerm: '',
@@ -251,70 +251,26 @@ function renderSnippets() {
 }
 
 /* ============================================================
-   AUTH: GOOGLE LOGIN (POPUP METHOD)
+   AUTH: GOOGLE LOGIN - TEST 1: sign-in/social (NO state)
    ============================================================ */
-
-// Login button - Opens a popup for OAuth
 $('btn-google-login').addEventListener('click', () => {
     const redirectTo = window.location.origin + window.location.pathname;
-    // Using OAuth2 authorize endpoint with popup mode
-    const authUrl = `https://postbase-production-b4c8.up.railway.app/api/auth/oauth2/authorize?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`;
     
-    console.log('Opening auth popup:', authUrl);
+    // ===== TEST 1: sign-in/social (NO state) =====
+    const authUrl = `https://postbase-production-b4c8.up.railway.app/api/auth/sign-in/social?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`;
     
-    // Open popup
-    const popup = window.open(authUrl, 'google-auth', 'width=500,height=600,left=200,top=100');
-    
-    // Listen for messages from the popup
-    const handleMessage = (event) => {
-        if (event.data && event.data.type === 'oauth-callback') {
-            console.log('Received OAuth callback:', event.data);
-            const { access_token, user_id, email, avatar_url } = event.data;
-            
-            if (access_token && user_id) {
-                const user = {
-                    id: user_id,
-                    email: email || 'user@example.com',
-                    avatar: avatar_url || '',
-                    access_token: access_token,
-                };
-                saveSession(user);
-                showToast('Welcome back!', 'success');
-                loadDashboard();
-            } else {
-                showToast('Login failed: Missing user data', 'error');
-            }
-            
-            window.removeEventListener('message', handleMessage);
-        }
-    };
-    
-    window.addEventListener('message', handleMessage);
-    
-    // Fallback: Check popup URL after it closes
-    const checkPopup = setInterval(() => {
-        if (popup.closed) {
-            clearInterval(checkPopup);
-            window.removeEventListener('message', handleMessage);
-            // Try to get session from storage (in case token was set)
-            const session = getSession();
-            if (session) {
-                loadDashboard();
-            }
-        }
-    }, 1000);
+    console.log('🔵 TEST 1 - Opening:', authUrl);
+    window.open(authUrl, 'google-auth', 'width=500,height=600,left=200,top=100');
 });
 
-// Handle OAuth callback from URL params (for redirect flow)
+// Handle OAuth callback from URL params
 function handleOAuthCallback() {
-    // Check URL hash (Postbase often puts tokens in the hash)
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const accessToken = hashParams.get('access_token') || hashParams.get('token');
     const userId = hashParams.get('user_id') || hashParams.get('id');
     const email = hashParams.get('email');
     const avatar = hashParams.get('avatar_url');
     
-    // Also check query params
     const queryParams = new URLSearchParams(window.location.search);
     const queryAccessToken = queryParams.get('access_token') || queryParams.get('token');
     const queryUserId = queryParams.get('user_id') || queryParams.get('id');
@@ -334,7 +290,6 @@ function handleOAuthCallback() {
             access_token: finalToken,
         };
         saveSession(user);
-        // Clean URL
         window.history.replaceState({}, document.title, window.location.pathname);
         showToast('Welcome back!', 'success');
         loadDashboard();
@@ -568,10 +523,8 @@ $('tag-filter').addEventListener('input', (e) => {
    INIT
    ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
-    // Check URL for OAuth callback
     const handled = handleOAuthCallback();
     
-    // If no user after callback check, show login or dashboard
     if (!state.user) {
         const session = getSession();
         if (session) {
@@ -582,6 +535,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-console.log('🚀 DevSnippet App Loaded');
-console.log('📡 Postbase URL:', CONFIG.POSTBASE_URL);
-console.log('🔑 ANON Key set:', CONFIG.ANON_KEY ? '✅ Yes' : '❌ No');
+console.log('🚀 DevSnippet App Loaded - TEST 1: sign-in/social (NO state)');
